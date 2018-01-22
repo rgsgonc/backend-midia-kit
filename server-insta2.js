@@ -75,9 +75,9 @@ router.route('/insta')
         driver.get('https://www.instagram.com/ativarinformatica');
 
 
+        let media; 
         function getPrimeirosElementos () {
-            const media = _sharedData.entry_data.ProfilePage[0].user.media;
-
+            media = _sharedData.entry_data.ProfilePage[0].user.media;
             window.ObjetoRafael = { 
                 posts : [],
                 totalPosts : media.count
@@ -125,8 +125,9 @@ router.route('/insta')
         function scroll(){
             driver.executeScript("window.scrollTo(0, 500000)");
             driver.sleep(5000);
-
+            
             driver.executeScript(function(){
+                // console.log(window.ObjetoRafael);
                 return {
                     totalDePosts : media.count,
                     tamanhoArrayJaPopulado: window.ObjetoRafael.posts.length
@@ -141,9 +142,10 @@ router.route('/insta')
 
     
         driver.executeScript(getPrimeirosElementos).then(resultado => {
-           console.log(resultado.totalDePosts);
-           console.log(resultado.tamanhoArrayJaPopulado);
+        //    console.log(resultado.totalDePosts);
+        //    console.log(resultado.tamanhoArrayJaPopulado);
             if(resultado.tamanhoArrayJaPopulado < resultado.totalDePosts){
+                console.log("cai no scrol");
                 scroll();
             }
 
@@ -170,7 +172,10 @@ router.route('/insta')
             //         console.log("instagram salvo");
             //     }
             // })
-        });   
+        });  
+        
+        
+        
     // });     
 })
     
