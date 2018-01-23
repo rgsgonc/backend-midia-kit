@@ -10,6 +10,7 @@ var schedule = require('node-schedule');
 var webdriver = require('selenium-webdriver'),
 By = webdriver.By,
 until = webdriver.until;
+const controlFlow = webdriver.promise.controlFlow();
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -74,94 +75,135 @@ router.route('/insta')
     
         driver.get('https://www.instagram.com/ativarinformatica');
 
-
-        let media; 
         function getPrimeirosElementos () {
-            media = _sharedData.entry_data.ProfilePage[0].user.media;
-            window.ObjetoRafael = { 
-                posts : [],
-                totalPosts : media.count
+            
+            let media = _sharedData.entry_data.ProfilePage[0].user.media;
+            
+            window.scrohla = { 
+                totalPosts : media.count,
+                posts : []
             };
         
-            media.nodes.forEach( item =>  { 
-                window.ObjetoRafael.posts.push({ node : item }) ;
-            });
+            media.nodes.forEach( item => window.scrohla.posts.push({ node : item }) );
+
+            console.log("window.scrohla.posts: ", window.scrohla.posts.length);
             
             var origOpen = XMLHttpRequest.prototype.open;
-                
             XMLHttpRequest.prototype.open = function() {
-            
                 this.addEventListener("load", function() {
                     const response = JSON.parse(this.responseText);
                     if(response.data){
-                        window.ObjetoRafael.posts = window.ObjetoRafael.posts.concat(response.data.user.edge_owner_to_timeline_media.edges);
+                        window.scrohla.posts = window.scrohla.posts.concat(response.data.user.edge_owner_to_timeline_media.edges);
+                        console.log("window.scrohla.posts: ", window.scrohla.posts.length);
                     }
                 });
-        
                 origOpen.apply(this, arguments);
             };
         
             return {
-                totalDePosts : media.count,
-                tamanhoArrayJaPopulado: window.ObjetoRafael.posts.length
+                totalPosts : window.scrohla.totalPosts,
+                tamanhoArrayJaPopulado: window.scrohla.posts.length
             }
         };
 
-        //_lilm5
-        driver.sleep(5000);
-        let spanCarregar2 = ('//span[@class="_lilm5"]');
-        driver.findElement(By.xpath(spanCarregar2)).click();
-        driver.sleep(5000);
-        let carregarMais = ('//a[contains(text(), "Carregar mais")]');
-        driver.findElement(By.xpath(carregarMais)).click();
-
-
-        // let spanCarregar = ('//span[@class="_8scx2"]');
-        // driver.findElement(By.xpath(spanCarregar)).click();
-        // driver.sleep(5000);
-        // let carregarMais = ('//a[contains(text(), "Carregar mais")]');
-        // driver.findElement(By.xpath(carregarMais)).click();
-
         function scroll(){
-            driver.executeScript("window.scrollTo(0, 500000)");
-            driver.sleep(5000);
+
+            // controlFlow.execute( () => console.log(` srolling...`) ); 
+
+            // driver.executeScript(function(){
+            //     window.scrollTo(0, 500000);
+            // });
+
             
+            // controlFlow.execute( () => console.log(` sleep...`) );
+            // driver.sleep(5000); 
+           
+           
+             // controlFlow.execute( () =>  {
+            //     console.log("teste flow ...");
+            //     res.json({resultado})
+            // }); 
+           
+            driver.sleep(2000); 
             driver.executeScript(function(){
-                // console.log(window.ObjetoRafael);
+                window.scrollTo(0, 500000);
+            });
+            driver.sleep(2000); 
+            
+
+            // controlFlow.execute( () => console.log(` executeScript...`) );
+            driver.executeScript(function(){
                 return {
-                    totalDePosts : media.count,
-                    tamanhoArrayJaPopulado: window.ObjetoRafael.posts.length
+                    totalPosts : window.scrohla.totalPosts,
+                    tamanhoArrayJaPopulado: window.scrohla.posts.length
                 }
-            }).then(function(resultado){
-                if(resultado.tamanhoArrayJaPopulado < resultado.totalDePosts){
+            }).then(resultado => {
+                // controlFlow.execute( () => console.log(` resultado ${JSON.stringify(resultado)}`) );
+                console.log(JSON.stringify(resultado));
+                if(resultado.totalPosts > resultado.tamanhoArrayJaPopulado){
+                    // console.log("resultado.totalPosts ",resultado.totalPosts);
+                    // console.log("resultado.tamanhoArrayJaPopulado ", resultado.tamanhoArrayJaPopulado);
                     scroll();
                 }
             });
 
-        }
+        };
+
+        function getPosts(){
+            return driver.executeScript(function(){
+                return window.scrohla.posts;
+            });
+        };
+        
+        //FECHANDO A BARRA DE FOOTER.
+        let spanBranco = ('//span[@class="_lilm5"]');
+        let spanPreto = ('//section[@class="_cqw45 _2pnef"]//div[@class="_mtajp"]//a[@class="_5gt5u coreSpriteDismissLarge"]//span[@class="_8scx2"]');
+        let carregarMais = ('//a[contains(text(), "Carregar mais")]');
+
+        driver.findElement(By.xpath(spanBranco)).then(el => {
+            driver.sleep(5000);
+            el.click();
+            driver.sleep(5000);
+            driver.findElement(By.xpath(carregarMais)).click();
+        }).catch(error => {
+            driver.sleep(5000);
+            driver.findElement(By.xpath(spanPreto)).click();
+            driver.findElement(By.xpath(carregarMais)).click();
+        });
+
+             
 
     
         driver.executeScript(getPrimeirosElementos).then(resultado => {
+        
         //    console.log(resultado.totalDePosts);
         //    console.log(resultado.tamanhoArrayJaPopulado);
-            if(resultado.tamanhoArrayJaPopulado < resultado.totalDePosts){
-                console.log("cai no scrol");
+            
+        
+            if(resultado.tamanhoArrayJaPopulado < resultado.totalPosts){
+                console.log("resultado 1: ", resultado);
                 scroll();
             }
 
-            driver.executeScript(function(){
-                return window.ObjetoRafael.posts;
-            }).then(resultadojson => {
-                console.log("total array capturado: " + resultadojson.length);
-            });
+            // driver.controlFlow.executeScript();
+            //NAO TA CHEGANDO AQUI PQQ?
+            // driver.executeScript(getPosts).then(resultadojson => {
+            //     console.log("total array capturado: " + resultadojson.length);
+            // });
             
             
             // let instagram = new Instagram();
             // instagram.hora_coleta = new Date();
             // instagram.user = resultado.username;
             // instagram.dados = JSON.stringify(resultado);
+
+            // getPosts().then( resultado => res.json( { "tamanho" : resultado.length}))
+                
+            // controlFlow.execute( () =>  {
+            //     console.log("teste flow ...");
+            //     res.json({resultado})
+            // }); 
             
-            res.json({resultado}); 
     
             // instagram.save(function(err){
             //     if(err){
