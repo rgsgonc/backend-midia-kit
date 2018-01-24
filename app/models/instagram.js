@@ -2,10 +2,10 @@ var mongoose     = require('mongoose');
 var Schema       = mongoose.Schema;
 
 var InstagramSchema   = new Schema({
-    dados: String,
+    dados: Schema.Types.Mixed,
     hora_coleta: Date,
     user: String,
-    publicacoes: String
+    publicacoes: Schema.Types.Mixed
 });
 
 module.exports = mongoose.model('Instagram', InstagramSchema);

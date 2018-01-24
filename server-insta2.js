@@ -1,3 +1,4 @@
+
 var mongoose   = require('mongoose');
 mongoose.connect('mongodb://localhost/rest-api'); // connect to our database
 
@@ -73,20 +74,43 @@ router.route('/insta')
     
         driver.manage().window().maximize();
     
-        driver.get('https://www.instagram.com/ativarinformatica');
+        driver.get('https://www.instagram.com');
 
-        function getPrimeirosElementos () {
+        let login = ('//p[@class="_g9ean"]//a');
+        driver.sleep(2000);
+        driver.findElement(By.xpath(login)).click();
+        let user = ('//input[@name="username"]')
+        driver.sleep(1000);
+        let senha = ('//input[@type="password"]');
+        // driver.findElement(By.xpath(user)).sendKeys("rafinhagsantos");
+        driver.findElement(By.xpath(user)).sendKeys("contateste9915");
+        driver.sleep(1000);
+        // driver.findElement(By.xpath(senha)).sendKeys("Rrg018nm*");
+        driver.findElement(By.xpath(senha)).sendKeys("99151767");
+        driver.sleep(1000);
+        let botao = ('//button[@class="_qv64e _gexxb _4tgw8 _njrw0"]');
+        driver.sleep(1000);
+        driver.findElement(By.xpath(botao)).click();
+        driver.sleep(1000);
+        let ativar = ('//a[@class="_f89xq"]');
+        driver.sleep(1000);
+        driver.findElement(By.xpath(ativar)).click();
+        
+        
+        function populatePosts () {    
+            const media = _sharedData.entry_data.ProfilePage[0].user.media;
+            const dadosUser = window._sharedData.entry_data.ProfilePage[0].user;
             
-            let media = _sharedData.entry_data.ProfilePage[0].user.media;
             
             window.scrohla = { 
-                totalPosts : media.count,
-                posts : []
+                totalPosts : media.count, 
+                posts : [],
+                dadosUser : dadosUser
             };
         
             media.nodes.forEach( item => window.scrohla.posts.push({ node : item }) );
 
-            console.log("window.scrohla.posts: ", window.scrohla.posts.length);
+            //console.log("window.scrohla.posts: ", window.scrohla.posts.length);
             
             var origOpen = XMLHttpRequest.prototype.open;
             XMLHttpRequest.prototype.open = function() {
@@ -94,7 +118,7 @@ router.route('/insta')
                     const response = JSON.parse(this.responseText);
                     if(response.data){
                         window.scrohla.posts = window.scrohla.posts.concat(response.data.user.edge_owner_to_timeline_media.edges);
-                        console.log("window.scrohla.posts: ", window.scrohla.posts.length);
+                        // console.log("window.scrohla.posts: ", window.scrohla.posts.length);
                     }
                 });
                 origOpen.apply(this, arguments);
@@ -102,7 +126,8 @@ router.route('/insta')
         
             return {
                 totalPosts : window.scrohla.totalPosts,
-                tamanhoArrayJaPopulado: window.scrohla.posts.length
+                totalFound : window.scrohla.posts.length,
+                dadosUser : window.scrohla.dadosUser
             }
         };
 
@@ -128,23 +153,24 @@ router.route('/insta')
             driver.executeScript(function(){
                 window.scrollTo(0, 500000);
             });
-            driver.sleep(2000); 
+            driver.sleep(5000); 
             
 
             // controlFlow.execute( () => console.log(` executeScript...`) );
             driver.executeScript(function(){
                 return {
-                    totalPosts : window.scrohla.totalPosts,
-                    tamanhoArrayJaPopulado: window.scrohla.posts.length
-                }
-            }).then(resultado => {
+                    totalPosts : window.scrohla.totalPosts, 
+                    totalFound : window.scrohla.posts.length
+                };
+            }).then(result => {
                 // controlFlow.execute( () => console.log(` resultado ${JSON.stringify(resultado)}`) );
-                console.log(JSON.stringify(resultado));
-                if(resultado.totalPosts > resultado.tamanhoArrayJaPopulado){
+                console.log(JSON.stringify(result));
+                if(result.totalPosts > result.totalFound){
                     // console.log("resultado.totalPosts ",resultado.totalPosts);
                     // console.log("resultado.tamanhoArrayJaPopulado ", resultado.tamanhoArrayJaPopulado);
                     scroll();
                 }
+                console.log(`Pegando ${result.totalFound} de ${result.totalPosts}`);
             });
 
         };
@@ -154,9 +180,16 @@ router.route('/insta')
                 return window.scrohla.posts;
             });
         };
-        
+
+        function getDadosUser(){
+            return driver.executeScript(function(){
+                return window.scrohla.dadosUser;
+            });
+        };
+      
+       
         //FECHANDO A BARRA DE FOOTER.
-        let spanBranco = ('//span[@class="_lilm5"]');
+        /*let spanBranco = ('//span[@class="_lilm5"]');
         let spanPreto = ('//section[@class="_cqw45 _2pnef"]//div[@class="_mtajp"]//a[@class="_5gt5u coreSpriteDismissLarge"]//span[@class="_8scx2"]');
         let carregarMais = ('//a[contains(text(), "Carregar mais")]');
 
@@ -169,21 +202,68 @@ router.route('/insta')
             driver.sleep(5000);
             driver.findElement(By.xpath(spanPreto)).click();
             driver.findElement(By.xpath(carregarMais)).click();
-        });
+        });*/
 
              
 
     
-        driver.executeScript(getPrimeirosElementos).then(resultado => {
-        
-        //    console.log(resultado.totalDePosts);
-        //    console.log(resultado.tamanhoArrayJaPopulado);
-            
-        
-            if(resultado.tamanhoArrayJaPopulado < resultado.totalPosts){
-                console.log("resultado 1: ", resultado);
+        driver.executeScript(populatePosts).then(result => {
+
+            if(result.totalFound < result.totalPosts ){
+                console.log("resultado 1: ", result);
+                //console.log("dados user:" , JSON.stringify(result.dadosUser));
                 scroll();
             }
+
+            // getDadosUser().then(userinfo => {
+            //     console.log("IIIHAHAAAAAAA", JSON.stringify(userinfo));
+
+            //     let instagram = new Instagram();
+                
+            //     // instagram.user = resultado.username;
+            //     instagram.dados = userinfo;
+
+            //     instagram.save(function(err){
+            //         if(err){
+            //             res.send(err);
+            //             console.log("problema ao salvar o instagram");
+            //         }else{
+            //             //res.json({ posts});
+            //             console.log("instagram salvo 2");
+            //         }
+            //     })
+            // });
+
+            getPosts().then(posts => { 
+               console.log(posts[0].node.caption);
+
+                // console.log("AEEEEEEEEEEEEEEEEE TO AQUIIIIIIII", JSON.stringify(getDadosUser()));
+
+                let instagram = new Instagram();
+                instagram.hora_coleta = new Date();
+                // instagram.user = resultado.username;
+                instagram.publicacoes = posts;
+                instagram.dados = getDadosUser();
+
+                instagram.save(function(err){
+                    if(err){
+                        res.send(err);
+                        console.log("problema ao salvar o instagram");
+                    }else{
+                        // res.json({ posts});
+                        console.log("instagram salvo");
+                    }
+                })
+            });
+
+
+
+          
+            // driver.executeScript(getPosts).then(final  => {
+            //     console.log("chequi aqui");
+            //     console.log(final);
+            // });
+
 
             // driver.controlFlow.executeScript();
             //NAO TA CHEGANDO AQUI PQQ?
@@ -192,19 +272,21 @@ router.route('/insta')
             // });
             
             
+
             // let instagram = new Instagram();
             // instagram.hora_coleta = new Date();
             // instagram.user = resultado.username;
-            // instagram.dados = JSON.stringify(resultado);
+            // instagram.dados = JSON.stringify(posts);
 
-            // getPosts().then( resultado => res.json( { "tamanho" : resultado.length}))
+            // getPosts().then( resultado => res.json( { "tamanho" : result}))
                 
             // controlFlow.execute( () =>  {
-            //     console.log("teste flow ...");
-            //     res.json({resultado})
+            //     driver.executeScript(getPosts).then(resultadojson => {
+            //     console.log("total array capturado: " + resultadojson);
+            // });
             // }); 
             
-    
+            //console.log(result);
             // instagram.save(function(err){
             //     if(err){
             //         res.send(err);
