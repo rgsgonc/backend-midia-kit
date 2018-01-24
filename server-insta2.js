@@ -1,5 +1,6 @@
 
 var mongoose   = require('mongoose');
+
 mongoose.connect('mongodb://localhost/rest-api'); // connect to our database
 
 var express    = require('express');        
@@ -12,7 +13,7 @@ var webdriver = require('selenium-webdriver'),
 By = webdriver.By,
 until = webdriver.until;
 const controlFlow = webdriver.promise.controlFlow();
-
+var Promise = webdriver.promise;
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
@@ -132,42 +133,20 @@ router.route('/insta')
         };
 
         function scroll(){
-
-            // controlFlow.execute( () => console.log(` srolling...`) ); 
-
-            // driver.executeScript(function(){
-            //     window.scrollTo(0, 500000);
-            // });
-
-            
-            // controlFlow.execute( () => console.log(` sleep...`) );
-            // driver.sleep(5000); 
-           
-           
-             // controlFlow.execute( () =>  {
-            //     console.log("teste flow ...");
-            //     res.json({resultado})
-            // }); 
-           
             driver.sleep(2000); 
             driver.executeScript(function(){
                 window.scrollTo(0, 500000);
             });
             driver.sleep(5000); 
             
-
-            // controlFlow.execute( () => console.log(` executeScript...`) );
             driver.executeScript(function(){
                 return {
                     totalPosts : window.scrohla.totalPosts, 
                     totalFound : window.scrohla.posts.length
                 };
             }).then(result => {
-                // controlFlow.execute( () => console.log(` resultado ${JSON.stringify(resultado)}`) );
                 console.log(JSON.stringify(result));
                 if(result.totalPosts > result.totalFound){
-                    // console.log("resultado.totalPosts ",resultado.totalPosts);
-                    // console.log("resultado.tamanhoArrayJaPopulado ", resultado.tamanhoArrayJaPopulado);
                     scroll();
                 }
                 console.log(`Pegando ${result.totalFound} de ${result.totalPosts}`);
@@ -183,9 +162,12 @@ router.route('/insta')
 
         function getDadosUser(){
             return driver.executeScript(function(){
+                console.log("CE ACREDITA??????????????");
                 return window.scrohla.dadosUser;
             });
         };
+
+        
       
        
         //FECHANDO A BARRA DE FOOTER.
@@ -203,17 +185,32 @@ router.route('/insta')
             driver.findElement(By.xpath(spanPreto)).click();
             driver.findElement(By.xpath(carregarMais)).click();
         });*/
-
-             
-
-    
         driver.executeScript(populatePosts).then(result => {
-
             if(result.totalFound < result.totalPosts ){
-                console.log("resultado 1: ", result);
+                //console.log("resultado 1: ", result);
                 //console.log("dados user:" , JSON.stringify(result.dadosUser));
                 scroll();
-            }
+            }  
+            getPosts().then(posts =>{
+                getDadosUser().then(dados => {
+                    let instagram = new Instagram();
+                    instagram.hora_coleta = new Date();            
+                    instagram.publicacoes = posts;
+                    instagram.dados = dados;
+        
+                    instagram.save(function(err){
+                        if(err){
+                            res.send(err);
+                            console.log("problema ao salvar o instagram");
+                        }else{
+                            // res.json({ posts});
+                            console.log("instagram salvo");
+                        }
+                    })
+                });
+            });
+         });
+                     
 
             // getDadosUser().then(userinfo => {
             //     console.log("IIIHAHAAAAAAA", JSON.stringify(userinfo));
@@ -234,31 +231,10 @@ router.route('/insta')
             //     })
             // });
 
-            getPosts().then(posts => { 
-               console.log(posts[0].node.caption);
+            
+            
 
-                // console.log("AEEEEEEEEEEEEEEEEE TO AQUIIIIIIII", JSON.stringify(getDadosUser()));
-
-                let instagram = new Instagram();
-                instagram.hora_coleta = new Date();
-                // instagram.user = resultado.username;
-                instagram.publicacoes = posts;
-                instagram.dados = getDadosUser();
-
-                instagram.save(function(err){
-                    if(err){
-                        res.send(err);
-                        console.log("problema ao salvar o instagram");
-                    }else{
-                        // res.json({ posts});
-                        console.log("instagram salvo");
-                    }
-                })
-            });
-
-
-
-          
+                     
             // driver.executeScript(getPosts).then(final  => {
             //     console.log("chequi aqui");
             //     console.log(final);
@@ -296,7 +272,7 @@ router.route('/insta')
             //         console.log("instagram salvo");
             //     }
             // })
-        });  
+         
         
         
         
