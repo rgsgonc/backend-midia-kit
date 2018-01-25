@@ -84,15 +84,27 @@ router.route('/insta')
         driver.sleep(1000);
         let senha = ('//input[@type="password"]');
         // driver.findElement(By.xpath(user)).sendKeys("rafinhagsantos");
+        // driver.findElement(By.xpath(user)).sendKeys("ativarinformatica");
         driver.findElement(By.xpath(user)).sendKeys("contateste9915");
         driver.sleep(1000);
         // driver.findElement(By.xpath(senha)).sendKeys("Rrg018nm*");
         driver.findElement(By.xpath(senha)).sendKeys("99151767");
+        // driver.findElement(By.xpath(senha)).sendKeys("98111916");
         driver.sleep(1000);
         let botao = ('//button[@class="_qv64e _gexxb _4tgw8 _njrw0"]');
         driver.sleep(1000);
         driver.findElement(By.xpath(botao)).click();
         driver.sleep(1000);
+
+        // let inputPesquisaInsta = ('//div[@class="_5ayw3 _ohiyl"]//input[@class="_avvq0 _o716c"]');
+        // driver.findElement(By.xpath(inputPesquisaInsta)).sendKeys("kadalsasso");
+        // driver.sleep(5000);
+        // driver.sendKeys(Keys.TAB);
+
+        // let instaDesejado = ('//div[@class="_etpgz"]//a[@class="_gimca _5tsk5"]');
+        // driver.findElement(By.xpath(instaDesejado)).click();
+        
+
         let ativar = ('//a[@class="_f89xq"]');
         driver.sleep(1000);
         driver.findElement(By.xpath(ativar)).click();
@@ -109,7 +121,12 @@ router.route('/insta')
                 dadosUser : dadosUser
             };
         
-            media.nodes.forEach( item => window.scrohla.posts.push({ node : item }) );
+            media.nodes.forEach( item => {
+                item.edge_media_to_comment = item.comments;
+                item.edge_media_preview_like = item.likes; 
+                item.shortcode = item.code;
+                window.scrohla.posts.push({ node : item });
+            });
 
             //console.log("window.scrohla.posts: ", window.scrohla.posts.length);
             
