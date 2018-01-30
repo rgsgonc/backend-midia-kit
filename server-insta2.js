@@ -1,4 +1,4 @@
-
+var moment = require('moment');
 var mongoose   = require('mongoose');
 
 mongoose.connect('mongodb://localhost/rest-api'); // connect to our database
@@ -50,7 +50,7 @@ router.route('/insta')
         let botao = ('//button[@class="_qv64e _gexxb _4tgw8 _njrw0"]');
         
         driver.findElement(By.xpath(botao)).click();
-        driver.sleep(5000);
+        driver.sleep(3000);
             
         driver.get('https://www.instagram.com/ativarinformatica');
         // let ativar = ('//a[@class="_f89xq"]');
@@ -73,6 +73,18 @@ router.route('/insta')
                 item.edge_media_to_comment = item.comments;
                 item.edge_media_preview_like = item.likes; 
                 item.shortcode = item.code;
+
+                let edge_media_to_caption = {
+                    edges: [
+                        {
+                            node: {
+                                text: item.caption
+                            }
+                        }
+                    ]
+                };
+
+                item.edge_media_to_caption = edge_media_to_caption;
                 window.scrohla.posts.push({ node : item });
             });
 
@@ -90,8 +102,7 @@ router.route('/insta')
             return {
                 totalPosts : window.scrohla.totalPosts,
                 totalFound : window.scrohla.posts.length,
-                dadosUser : window.scrohla.dadosUser,
-                
+                dadosUser  : window.scrohla.dadosUser
             }
         };
 
@@ -108,13 +119,11 @@ router.route('/insta')
                     totalFound : window.scrohla.posts.length
                 };
             }).then(result => {
-                console.log(JSON.stringify(result));
                 if(result.totalPosts > result.totalFound){
                     scroll();
                 }
-                console.log(`Pegando ${result.totalFound} de ${result.totalPosts}`);
+                console.log(`Coletando ${result.totalFound} de ${result.totalPosts}`);
             });
-
         };
 
         function getPosts(){
@@ -130,7 +139,6 @@ router.route('/insta')
         };
 
         driver.executeScript(populatePosts).then(result => {
-            console.log("to aqui", result);
             if(result.totalFound < result.totalPosts ){
                 scroll();
             }  
@@ -139,26 +147,54 @@ router.route('/insta')
                     let instagram = new Instagram();
                     instagram.hora_coleta = new Date();            
                     //instagram.publicacoes = posts;
-                    instagram.dados = dados;
-                    instagram.user = dados.username;
-                    instagram.total_publicacoes = dados.media.count;
-
+                    // instagram.dados = dados;
+                    // instagram.user = dados.username;
+                    // instagram.total_publicacoes = dados.media.count;
                     let minhasPublicacoes = [];
+                    let meusDados = [];
 
+                    console.log("POSTTTT", JSON.stringify(posts));
+
+                    //for (let i in posts)
                     for(let i=0; i < posts.length; i++){
-
                         let pup = {
-                            nu_likes: posts[i].node.edge_media_preview_like.count,
-                            nu_comments: posts[i].node.edge_media_to_comment.count,
-                            caption: posts[i].node.caption
+                            qtdLikes         : posts[i].node.edge_media_preview_like.count,
+                            qtdComentarios   : posts[i].node.edge_media_to_comment.count,
+                            // legenda          : posts[i].node.caption,
+                            legenda          : posts[i].node.edge_media_to_caption.edges[0].node.text,
+                            dataPublicacao   : moment(new Date(posts[i].node.date * 1000)).format('DD/MM/YYYY HH:mm:ss'),
+                            thumbnail        : posts[i].node.thumbnail_src,
+                            thumbnail150x150 : posts[i].node.thumbnail_resources[0].src,
+                            thumbnail240x240 : posts[i].node.thumbnail_resources[1].src,
+                            thumbnail320x320 : posts[i].node.thumbnail_resources[2].src,
+                            thumbnail480x480 : posts[i].node.thumbnail_resources[3].src,
+                            thumbnail640x640 : posts[i].node.thumbnail_resources[4].src,
+                            shortcode        : posts[i].node.shortcode,
+                            isVideo          : posts[i].node.is_video
+
                         }
-                        
                         minhasPublicacoes.push(pup);
                     }
                     
-
+                    let infoDados = {
+                        username        : result.dadosUser.username,
+                        qtdSeguindo     : result.dadosUser.follows.count,
+                        qtdSeguidores   : result.dadosUser.followed_by.count,
+                        biografia       : result.dadosUser.biography,
+                        site            : result.dadosUser.external_url,
+                        nome            : result.dadosUser.full_name,
+                        contaVerificada : result.dadosUser.is_verified,
+                        contaPrivada    : result.dadosUser.is_private,
+                        fotoPerfilHd    : result.dadosUser.profile_pic_url_hd,
+                        fotoPerfil      : result.dadosUser.profile_pic_url,
+                        qtdPublicacoes  : result.dadosUser.media.count
+                    }
+                    
+                    meusDados.push(infoDados);
+                    
 
                     instagram.publicacoes = minhasPublicacoes;
+                    instagram.dados = meusDados;
 
                     instagram.save(function(err){
                         if(err){
