@@ -52,7 +52,7 @@ router.route('/insta')
         driver.findElement(By.xpath(botao)).click();
         driver.sleep(3000);
             
-        driver.get('https://www.instagram.com/ativarinformatica');
+        driver.get('https://www.instagram.com/contateste9915');
         // let ativar = ('//a[@class="_f89xq"]');
         // driver.sleep(1000);
         // driver.findElement(By.xpath(ativar)).click();
@@ -85,6 +85,7 @@ router.route('/insta')
                 };
 
                 item.edge_media_to_caption = edge_media_to_caption;
+                item.taken_at_timestamp = item.date;
                 window.scrohla.posts.push({ node : item });
             });
 
@@ -162,7 +163,7 @@ router.route('/insta')
                             qtdComentarios   : posts[i].node.edge_media_to_comment.count,
                             // legenda          : posts[i].node.caption,
                             legenda          : posts[i].node.edge_media_to_caption.edges[0].node.text,
-                            dataPublicacao   : moment(new Date(posts[i].node.date * 1000)).format('DD/MM/YYYY HH:mm:ss'),
+                            dataPublicacao   : moment(new Date(posts[i].node.taken_at_timestamp * 1000)).format('DD/MM/YYYY HH:mm:ss'),
                             thumbnail        : posts[i].node.thumbnail_src,
                             thumbnail150x150 : posts[i].node.thumbnail_resources[0].src,
                             thumbnail240x240 : posts[i].node.thumbnail_resources[1].src,
