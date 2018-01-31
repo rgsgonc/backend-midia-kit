@@ -127,12 +127,14 @@ router.route('/insta')
             });
         };
 
+        //Pega todas as publicações do instagram.
         function getPosts(){
             return driver.executeScript(function(){
                 return window.scrohla.posts;
             });
         };
 
+        //Pega as informaçoes das 12 primeiras publicacoes, e outras informacoes como qtdFotos, qtdSeguidores, qtdSeguindo, etc.
         function getDadosUser(){
             return driver.executeScript(function(){
                 return window.scrohla.dadosUser;
@@ -147,21 +149,14 @@ router.route('/insta')
                 getDadosUser().then(dados => {
                     let instagram = new Instagram();
                     instagram.hora_coleta = new Date();            
-                    //instagram.publicacoes = posts;
-                    // instagram.dados = dados;
-                    // instagram.user = dados.username;
-                    // instagram.total_publicacoes = dados.media.count;
                     let minhasPublicacoes = [];
                     let meusDados = [];
-
-                    console.log("POSTTTT", JSON.stringify(posts));
 
                     //for (let i in posts)
                     for(let i=0; i < posts.length; i++){
                         let pup = {
                             qtdLikes         : posts[i].node.edge_media_preview_like.count,
                             qtdComentarios   : posts[i].node.edge_media_to_comment.count,
-                            // legenda          : posts[i].node.caption,
                             legenda          : posts[i].node.edge_media_to_caption.edges[0].node.text,
                             dataPublicacao   : moment(new Date(posts[i].node.taken_at_timestamp * 1000)).format('DD/MM/YYYY HH:mm:ss'),
                             thumbnail        : posts[i].node.thumbnail_src,
