@@ -6,8 +6,8 @@ mongoose.connect('mongodb://localhost/rest-api'); // connect to our database
 var express    = require('express');        
 var app        = express();                 
 var bodyParser = require('body-parser');
-var Instagram     = require('./app/models/instagram');
-var schedule = require('node-schedule');
+var Instagram  = require('./app/models/instagram');
+var schedule   = require('node-schedule');
 
 var webdriver = require('selenium-webdriver'),
 By = webdriver.By,
@@ -35,29 +35,21 @@ router.route('/insta')
         .forBrowser('chrome')
         .build();
     
+        //Acessando o navegador via selenium, logando no insta contateste9915 e acessando o insta passado no driver get.
         driver.manage().window().maximize();
-    
         driver.get('https://www.instagram.com');
-
         let login = ('//p[@class="_g9ean"]//a');
         driver.sleep(2000);
         driver.findElement(By.xpath(login)).click();
         let user = ('//input[@name="username"]')
-        driver.sleep(1000);
         let senha = ('//input[@type="password"]');
         driver.findElement(By.xpath(user)).sendKeys("contateste9915");
         driver.findElement(By.xpath(senha)).sendKeys("99151767");
         let botao = ('//button[@class="_qv64e _gexxb _4tgw8 _njrw0"]');
-        
         driver.findElement(By.xpath(botao)).click();
-        driver.sleep(3000);
-            
-        driver.get('https://www.instagram.com/contateste9915');
-        // let ativar = ('//a[@class="_f89xq"]');
-        // driver.sleep(1000);
-        // driver.findElement(By.xpath(ativar)).click();
+        driver.sleep(1000);
+        driver.get('https://www.instagram.com/kadalsasso');
 
-        
         
         function populatePosts () {    
             const media = _sharedData.entry_data.ProfilePage[0].user.media;
@@ -69,10 +61,11 @@ router.route('/insta')
                 dadosUser : dadosUser
             };
         
+            //Fazendo adaptação do retorno do json, para que todas as publicacoes e primeiros posts fiquem iguais.
             media.nodes.forEach( item => {
-                item.edge_media_to_comment = item.comments;
+                item.edge_media_to_comment   = item.comments;
                 item.edge_media_preview_like = item.likes; 
-                item.shortcode = item.code;
+                item.shortcode               = item.code;
 
                 let edge_media_to_caption = {
                     edges: [
@@ -89,6 +82,7 @@ router.route('/insta')
                 window.scrohla.posts.push({ node : item });
             });
 
+            //Aqui é a parte responsável por concatenar os 12 primeiros posts com todas as publicacoes do instagram.
             var origOpen = XMLHttpRequest.prototype.open;
             XMLHttpRequest.prototype.open = function() {
                 this.addEventListener("load", function() {
@@ -107,12 +101,12 @@ router.route('/insta')
             }
         };
 
+        //Faz o scroll até o final das publicacoes do instagram.
         function scroll(){
             driver.sleep(2000); 
             driver.executeScript(function(){
                 window.scrollTo(0, 500000);
             });
-            driver.sleep(5000); 
             
             driver.executeScript(function(){
                 return {
@@ -120,7 +114,7 @@ router.route('/insta')
                     totalFound : window.scrohla.posts.length
                 };
             }).then(result => {
-                if(result.totalPosts > result.totalFound){
+                if(result.totalPosts -1 >= result.totalFound){
                     scroll();
                 }
                 console.log(`Coletando ${result.totalFound} de ${result.totalPosts}`);
@@ -151,13 +145,36 @@ router.route('/insta')
                     instagram.hora_coleta = new Date();            
                     let minhasPublicacoes = [];
                     let meusDados = [];
-
+                    let somaLike = 0;
+                    let somaComentario = 0;
+                    let mediaLikes = 0;
+                    let mediaComentarios = 0;
                     //for (let i in posts)
                     for(let i=0; i < posts.length; i++){
+                        // if (!posts[i].node.edge_media_to_caption.edges[0]) {
+                        //     console.log(JSON.stringify(posts[i]));
+                        // }
+                        
+                        //Pegando a quantidade total de likes no instagram.
+                        let qtdLikes = posts[i].node.edge_media_preview_like.count;
+                        somaLike = somaLike + qtdLikes;
+
+                        //Pegando a quantidade total de comentarios no instagram.
+                        let qtdComentarios = posts[i].node.edge_media_to_comment.count;
+                        somaComentario = somaComentario + qtdComentarios;
+
+                        //Pegando a média de curtidas do instagram.
+                        mediaLikes = somaLike / posts.length;
+
+                        //Pegando a média de comentários do instagram.
+                        mediaComentarios = somaComentario / posts.length;
+                        
+
+                        //Objeto responsável por pegar todas as publicações.
                         let pup = {
                             qtdLikes         : posts[i].node.edge_media_preview_like.count,
                             qtdComentarios   : posts[i].node.edge_media_to_comment.count,
-                            legenda          : posts[i].node.edge_media_to_caption.edges[0].node.text,
+                            legenda          : posts[i].node.edge_media_to_caption.edges[0] ? posts[i].node.edge_media_to_caption.edges[0].node.text : null,
                             dataPublicacao   : moment(new Date(posts[i].node.taken_at_timestamp * 1000)).format('DD/MM/YYYY HH:mm:ss'),
                             thumbnail        : posts[i].node.thumbnail_src,
                             thumbnail150x150 : posts[i].node.thumbnail_resources[0].src,
@@ -172,6 +189,7 @@ router.route('/insta')
                         minhasPublicacoes.push(pup);
                     }
                     
+                    // Objeto responsavel por pegar as informações do user.
                     let infoDados = {
                         username        : result.dadosUser.username,
                         qtdSeguindo     : result.dadosUser.follows.count,
@@ -185,12 +203,15 @@ router.route('/insta')
                         fotoPerfil      : result.dadosUser.profile_pic_url,
                         qtdPublicacoes  : result.dadosUser.media.count
                     }
-                    
                     meusDados.push(infoDados);
                     
 
-                    instagram.publicacoes = minhasPublicacoes;
-                    instagram.dados = meusDados;
+                    instagram.publicacoes               = minhasPublicacoes;
+                    instagram.dados                     = meusDados;
+                    instagram.totalLikesInstagram       = somaLike;
+                    instagram.totalComentariosInstagram = somaComentario;
+                    instagram.mediaLikes                = mediaLikes;
+                    instagram.mediaComentarios          = mediaComentarios;
 
                     instagram.save(function(err){
                         if(err){
