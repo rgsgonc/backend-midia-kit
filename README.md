@@ -28,3 +28,7 @@ driver.get('https://www.instagram.com/kadalsasso'); - ALTERAR AQUI O INSTAGRAM A
 A base de dados utilizada na aplicação é MongoDB.
 * Nome da base: rest-api
 * Collection: instagrams
+
+# Coleta Youtube
+
+Clique no botão para fazer login ``` $x ('//paper-button[@class="style-scope ytd-button-renderer style-brand"]//yt-formatted-string[contains(text(), "Fazer login")]')[0].click(); ```
