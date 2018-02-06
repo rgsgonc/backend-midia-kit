@@ -22,3 +22,9 @@ driver.get('https://www.instagram.com/kadalsasso'); - ALTERAR AQUI O INSTAGRAM A
 
 * Após alterar o instagram a ser coletado executar ``` node server-insta2.js```
 * Abrir o aplicativo POSTMAN e colocar na URL ``` http://localhost:9080/api/insta ``` , Method: POST.
+
+# Base de dados
+
+A base de dados utilizada na aplicação é MongoDB.
+* Nome da base: rest-api
+* Collection: instagrams
