@@ -31,6 +31,5 @@ A base de dados utilizada na aplicação é MongoDB.
 
 # Coleta Youtube
 
-Clique no botão para fazer login
-
+* Clique no botão para fazer login <br/>
 ``` $x ('//paper-button[@class="style-scope ytd-button-renderer style-brand"]//yt-formatted-string[contains(text(), "Fazer login")]')[0].click(); ```
