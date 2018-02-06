@@ -1,6 +1,7 @@
 # Backend Mídia Kit
 
 * Para realizar a coleta no instagram você deve baixar o projeto.
+* <b> <em> OBS: </em> Foi commitado a pasta node_modules da digitro, desta forma apagar todas as dependências e instalar novamente. </b>
 * Ir até o arquivo server-insta2.js e alterar o instagram que deseja fazer a coleta, conforme exemplo abaixo.
 
 ```
