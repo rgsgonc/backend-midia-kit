@@ -1,25 +1,35 @@
-# backend-midia-kit
+# Backend Mídia Kit
 
-para funcionar em casa apagar todas as dependencias e instalar de novo
+* Para realizar a coleta no instagram você deve baixar o projeto.
+* <b> <em> OBS: </em> Foi commitado a pasta node_modules da digitro, desta forma apagar todas as dependências e instalar novamente. </b>
+* Ir até o arquivo server-insta2.js e alterar o instagram que deseja fazer a coleta, conforme exemplo abaixo.
 
 ```
-let lista = [];
-var origOpen = XMLHttpRequest.prototype.open;
-XMLHttpRequest.prototype.open = function() {
-    console.log('request started!');
-    this.addEventListener('load', function() {
-       
-		console.log('request completed!');
-        console.log(this.readyState); //will always be 4 (ajax is completed successfully)
-
-        const resObject = JSON.parse(this.responseText);
-        if(resObject.data){
-			lista = lista.concat(resObject.data.user.edge_owner_to_timeline_media.edges);
-        }
-
-        //lista.push(JSON.parse(this.responseText));  
-          //console.log(this.responseText); //whatever the response was
-    });
-    origOpen.apply(this, arguments);
-};
+driver.manage().window().maximize();
+driver.get('https://www.instagram.com');
+let login = ('//p[@class="_g9ean"]//a');
+driver.sleep(2000);
+driver.findElement(By.xpath(login)).click();
+let user = ('//input[@name="username"]')
+let senha = ('//input[@type="password"]');
+driver.findElement(By.xpath(user)).sendKeys("contateste9915");
+driver.findElement(By.xpath(senha)).sendKeys("99151767");
+let botao = ('//button[@class="_qv64e _gexxb _4tgw8 _njrw0"]');
+driver.findElement(By.xpath(botao)).click();
+driver.sleep(1000);
+driver.get('https://www.instagram.com/kadalsasso'); - ALTERAR AQUI O INSTAGRAM A SER COLETADO.
 ```
+
+* Após alterar o instagram a ser coletado executar ``` node server-insta2.js```
+* Abrir o aplicativo POSTMAN e colocar na URL ``` http://localhost:9080/api/insta ``` , Method: POST.
+
+# Base de dados
+
+A base de dados utilizada na aplicação é MongoDB.
+* Nome da base: rest-api
+* Collection: instagrams
+
+# Coleta Youtube
+
+* Clique no botão para fazer login <br/>
+``` $x ('//paper-button[@class="style-scope ytd-button-renderer style-brand"]//yt-formatted-string[contains(text(), "Fazer login")]')[0].click(); ```
