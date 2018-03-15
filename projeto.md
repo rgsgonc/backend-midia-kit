@@ -2,13 +2,15 @@
 
 ⚠️ **WARNING:** Snippets are not production ready.
 
-## Table of Contents
+## Processo de teste após conclusão do desenvolvimento
 
-### 🔌 Adapter
+### 🌐 Esse processo de teste compreende em realizar alguns passos para realizar o teste completo do desenvolvimento.
+
+
 ### 📚 Array
 
 ### 🌐 Browser
-
+🔌
 
 ### ⏱️ Date
 
