@@ -10,6 +10,11 @@
 * Com o arquivo aberto clicar com o botão direito Run> Application.
 * OK o gateway já está rodando.
 
+#### Passo 2 - SUBIR O CRAWLER)
+* Para subir o gateway você deverá abrir o seu projeto do ``` crawler-collector ```
+* Ir até o seu terminal e digitar ``` node src/service/api-service.js```
+* OK o crawler já está rodando.
+
 ### 📚 Array
 
 ### 🌐 Browser
