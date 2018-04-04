@@ -114,11 +114,8 @@ router.route('/insta')
                     totalFound : window.scrohla.posts.length
                 };
             }).then(result => {
-<<<<<<< HEAD
+
                 if(result.totalPosts >= result.totalFound){
-=======
-                if(result.totalPosts -1 >= result.totalFound){
->>>>>>> origin/master
                     scroll();
                 }
                 console.log(`Coletando ${result.totalFound} de ${result.totalPosts}`);
